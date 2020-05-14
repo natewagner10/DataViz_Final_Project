@@ -2,7 +2,6 @@ library(shiny)
 library(shinydashboard)
 library(readr)
 library(data.table)
-
 shinyServer(function(input, output, session) {
     df_table <- reactiveFileReader(
         intervalMillis = 10000,
@@ -39,5 +38,15 @@ shinyServer(function(input, output, session) {
         session = session,
         filePath ='https://raw.githubusercontent.com/datasets/population/master/data/population.csv',
         readFunc = fread)
+    output$mydata <- renderDT({
+        df <- df_table()
+        df <- df %>% filter(state == 'Florida') %>% select(date, county,cases, deaths) %>% mutate(date=ymd(date))
+        df <- df %>% filter(date == max(date)) %>% arrange(desc(cases))
+        return(df)
+    })
+    tolisten <- reactive({
+        list(input$day, input$County)
+    })
+    
    
 })
